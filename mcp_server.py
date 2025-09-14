@@ -1,5 +1,6 @@
 from pydantic import Field
 from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.prompts import base
 
 mcp = FastMCP("DocumentMCP", log_level="ERROR")
 
@@ -59,8 +60,49 @@ def get_document(doc_id: str) -> str:
     
     return docs[doc_id]
 
-# TODO: Write a prompt to rewrite a doc in markdown format
+@mcp.prompt(
+    name="format",
+    description="Rewrites the contents of a document in Markdown format."
+)
+def format_document(
+    doc_id: str = Field(description="The ID of the document to format.")
+) -> list[base.Message]:
+    prompt = f"""
+    Your goal is to reformat a document into Markdown format.
+
+    The id of the document to format is:
+    <document_id>
+    {doc_id}
+    </document_id>
+
+    Add in headers, bullet points, and other Markdown formatting as appropriate.
+    Use the 'edit_document' tool to edit the document.
+    After the document is formatted, use the 'read_document' tool to read the contents of the document and return it.
+    """
+
+    return [base.UserMessage(prompt)]
+
 # TODO: Write a prompt to summarize a doc
+@mcp.prompt(
+    name="summarize",
+    description="Summarizes the contents of a document."
+)
+def summarize_document(
+    doc_id: str = Field(description="The ID of the document to summarize.")
+) -> list[base.Message]:
+    prompt = f"""
+    Your goal is to summarize a document.
+
+    The id of the document to summarize is:
+    <document_id>
+    {doc_id}
+    </document_id>
+
+    Provide a concise summary of the document's key points.
+    Use the 'read_document' tool to read the contents of the document.
+    """
+
+    return [base.UserMessage(prompt)]
 
 
 if __name__ == "__main__":
